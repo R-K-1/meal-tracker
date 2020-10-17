@@ -39,7 +39,11 @@ export class Meals extends React.PureComponent<MealsProps, MealsState> {
   }
 
   handleMealChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ newMealName: event.target.value })
+    if (event.target.name == "calories") {
+      this.setState({ newMealCalories: Number(event.target.value) })
+    } else {
+      this.setState({ newMealName: event.target.value })
+    }
   }
 
   onEditButtonClick = (mealId: string) => {
@@ -54,7 +58,8 @@ export class Meals extends React.PureComponent<MealsProps, MealsState> {
       })
       this.setState({
         meals: [...this.state.meals, newMeal],
-        newMealName: ''
+        newMealName: '',
+        newMealCalories: 0
       })
     } catch {
       alert('Meal creation failed')
@@ -87,7 +92,7 @@ export class Meals extends React.PureComponent<MealsProps, MealsState> {
   render() {
     return (
       <div>
-        <Header as="h1">MEALs</Header>
+        <Header as="h1">MEALS</Header>
 
         {this.renderCreateMealInput()}
 
@@ -100,19 +105,27 @@ export class Meals extends React.PureComponent<MealsProps, MealsState> {
     return (
       <Grid.Row>
         <Grid.Column width={16}>
-          <Input
-            action={{
-              color: 'teal',
-              labelPosition: 'left',
-              icon: 'add',
-              content: 'New meal',
-              onClick: this.onMealCreate
-            }}
-            fluid
-            actionPosition="left"
-            placeholder="What did you eat?"
-            onChange={this.handleMealChange}
-          />
+            <Input 
+              name="calories"
+              type="text"
+              placeholder="number of calories"
+              onChange={this.handleMealChange}
+            />
+            <Input
+              action={{
+                color: 'teal',
+                labelPosition: 'left',
+                icon: 'add',
+                content: 'New meal',
+                onClick: this.onMealCreate
+              }}
+              fluid
+              actionPosition="left"
+              name="mealName"
+              placeholder="What did you eat?"
+              onChange={this.handleMealChange}
+            />
+
         </Grid.Column>
         <Grid.Column width={16}>
           <Divider />
