@@ -2,16 +2,16 @@ import 'source-map-support/register'
 import * as middy from 'middy'
 import { cors } from 'middy/middlewares'
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
-import { CreateTodoRequest } from '../../requests/CreateTodoRequest'
+import { CreateMealRequest } from '../../requests/CreateMealRequest'
 import { getUserId } from '../utils'
-import { createTodo } from '../../businessLogic/todos'
+import { createMeal } from '../../businessLogic/meals'
 
 export const handler = middy(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    const newTodo: CreateTodoRequest = JSON.parse(event.body)
+    const newMeal: CreateMealRequest = JSON.parse(event.body)
     const userId = getUserId(event)
 
-    const item = createTodo(newTodo, userId)
+    const item = createMeal(newMeal, userId)
 
     return {
       statusCode: 201,

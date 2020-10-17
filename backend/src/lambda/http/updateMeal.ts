@@ -3,31 +3,31 @@ import * as middy from 'middy'
 import { cors } from 'middy/middlewares'
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 
-import { UpdateTodoRequest } from '../../requests/UpdateTodoRequest'
+import { UpdateMealRequest } from '../../requests/UpdateMealRequest'
 import { getUserId } from '../utils'
-import { updateTodo } from '../../businessLogic/todos'
+import { updateMeal } from '../../businessLogic/meals'
 import { createLogger } from '../../utils/logger'
 
 const logger = createLogger('auth')
 
 export const handler = middy(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    const todoId = event.pathParameters.todoId
-    const updatedTodo: UpdateTodoRequest = JSON.parse(event.body)
+    const mealId = event.pathParameters.mealId
+    const updatedMeal: UpdateMealRequest = JSON.parse(event.body)
     const userId = getUserId(event)
 
-    if (!todoId) {
+    if (!mealId) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: 'Missing todoId' })
+        body: JSON.stringify({ error: 'Missing mealId' })
       }
     }
 
     logger.info(
-      `Received request for updating todo item ${todoId} of user ${userId}...`
+      `Received request for updating meal item ${mealId} of user ${userId}...`
     )
     
-    await updateTodo(userId, todoId, updatedTodo)
+    await updateMeal(userId, mealId, updatedMeal)
 
     return {
       statusCode: 200,

@@ -1,9 +1,8 @@
-export interface TodoItem {
+export interface MealItem {
   userId: string
-  todoId: string
+  mealId: string
   createdAt: string
   name: string
-  dueDate: string
-  done: boolean
+  calories: number
   attachmentUrl?: string
 }

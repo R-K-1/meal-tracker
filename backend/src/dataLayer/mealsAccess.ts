@@ -1,35 +1,35 @@
 import * as AWS from 'aws-sdk'
 import * as AWSXRay from 'aws-xray-sdk'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
-import { TodoItem } from '../models/TodoItem'
-import { UpdateTodoRequest } from '../requests/UpdateTodoRequest'
+import { MealItem } from '../models/MealItem'
+import { UpdateMealRequest } from '../requests/UpdateMealRequest'
 
 const XAWS = AWSXRay.captureAWS(AWS)
 
-export class TodoAccess {
+export class MealAccess {
   constructor(
     private readonly docClient: DocumentClient = new XAWS.DynamoDB.DocumentClient(),
-    private readonly todosTable = process.env.TODOS_TABLE,
+    private readonly mealsTable = process.env.MEALS_TABLE,
     private readonly createdAtIndex = process.env.CREATED_AT_INDEX
   ) {}
 
-  async createTodo(todo: TodoItem): Promise<TodoItem> {
+  async createMeal(meal: MealItem): Promise<MealItem> {
     await this.docClient
       .put({
-        TableName: this.todosTable,
-        Item: todo
+        TableName: this.mealsTable,
+        Item: meal
       })
       .promise()
 
-    return todo
+    return meal
   }
 
-  async getTodos(userId: string): Promise<TodoItem[]> {
-    console.log('Getting all todos for user ' + userId)
+  async getMeals(userId: string): Promise<MealItem[]> {
+    console.log('Getting all meals for user ' + userId)
 
     const result = await this.docClient
       .query({
-        TableName: this.todosTable,
+        TableName: this.mealsTable,
         IndexName: this.createdAtIndex,
         KeyConditionExpression: 'userId = :userId',
         ExpressionAttributeValues: {
@@ -41,44 +41,42 @@ export class TodoAccess {
     console.log('query result: ' + JSON.stringify(result))
 
     const items = result.Items
-    return items as TodoItem[]
+    return items as MealItem[]
   }
 
-  async updateTodo(
+  async updateMeal(
     userId: string,
-    todoId: string,
-    updatedTodo: UpdateTodoRequest
+    mealId: string,
+    updatedMeal: UpdateMealRequest
   ) {
     await this.docClient
       .update({
-        TableName: this.todosTable,
+        TableName: this.mealsTable,
         Key: {
           userId,
-          todoId
+          mealId
         },
         UpdateExpression:
-          'set #name = :name, #dueDate = :duedate, #done = :done',
+          'set #name = :name, #calories = :calories',
         ExpressionAttributeValues: {
-          ':name': updatedTodo.name,
-          ':duedate': updatedTodo.dueDate,
-          ':done': updatedTodo.done
+          ':name': updatedMeal.name,
+          ':calories': updatedMeal.calories,
         },
         ExpressionAttributeNames: {
           '#name': 'name',
-          '#dueDate': 'dueDate',
-          '#done': 'done'
+          '#calories': 'calories'
         }
       })
       .promise()
   }
 
-  async deleteTodo(userId: string, todoId: string) {
+  async deleteMeal(userId: string, mealId: string) {
     await this.docClient
       .delete({
-        TableName: this.todosTable,
+        TableName: this.mealsTable,
         Key: {
           userId,
-          todoId
+          mealId
         }
       })
       .promise()

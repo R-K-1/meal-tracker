@@ -6,10 +6,10 @@
     "name": {
       "type": "string"
     },
-    "dueDate": {
-      "type": "string"
+    "calories": {
+      "type": "number"
     }
   },
-  "required": ["name", "dueDate"],
+  "required": ["name", "calories"],
   "additionalProperties": false
 }

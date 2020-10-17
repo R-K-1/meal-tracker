@@ -14,16 +14,16 @@ const XS3 = new XAWS.S3({
   signatureVersion: 'v4'
 })
 
-const bucketName = process.env.TODO_IMAGES_S3_BUCKET
+const bucketName = process.env.MEAL_IMAGES_S3_BUCKET
 const urlExpiration = process.env.SIGNED_URL_EXPIRATION
 
 export const handler = middy(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    const todoId = event.pathParameters.todoId
+    const mealId = event.pathParameters.mealId
 
-    logger.info('Geting signed URL for todo ', todoId)
+    logger.info('Geting signed URL for meal ', mealId)
 
-    const url = getUploadUrl(todoId)
+    const url = getUploadUrl(mealId)
 
     return {
       statusCode: 200,
@@ -40,10 +40,10 @@ handler.use(
   })
 )
 
-function getUploadUrl(todoId: string) {
+function getUploadUrl(mealId: string) {
   return XS3.getSignedUrl('putObject', {
     Bucket: bucketName,
-    Key: todoId,
+    Key: mealId,
     Expires: urlExpiration
   })
 }

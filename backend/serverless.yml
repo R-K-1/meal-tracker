@@ -1,7 +1,7 @@
 frameworkVersion: '2.4.0'
 
 service:
-  name: stay-on-track-app
+  name: meal-tracker-app
 
 plugins:
   - serverless-webpack
@@ -22,9 +22,9 @@ provider:
   region: ${opt:region, 'us-east-1'}
 
   environment:
-    TODOS_TABLE: Todos-${self:provider.stage}
+    MEALS_TABLE: Meals-${self:provider.stage}
     CREATED_AT_INDEX: CreatedAtIndex
-    TODO_IMAGES_S3_BUCKET: stay-on-track-serverless-todo-images-${self:provider.stage}
+    MEAL_IMAGES_S3_BUCKET: stay-on-track-serverless-meal-images-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
 
 custom:
@@ -32,7 +32,7 @@ custom:
     api:
       info:
         version: v1.0.0
-        title: Todo API
+        title: Meal API
         description: Serverless application for task tracker
     models:
       - name: CreateRequest
@@ -46,80 +46,80 @@ functions:
   Auth:
     handler: src/lambda/auth/auth0Authorizer.handler
 
-  GetTodos:
-    handler: src/lambda/http/getTodos.handler
+  GetMeals:
+    handler: src/lambda/http/getMeals.handler
     events:
       - http:
           method: get
-          path: todos
+          path: meals
           cors: true
           authorizer: Auth
     iamRoleStatements:
       - Effect: Allow
         Action:
           - dynamodb:Query
-        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}/index/${self:provider.environment.CREATED_AT_INDEX}
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.MEALS_TABLE}/index/${self:provider.environment.CREATED_AT_INDEX}
 
-  CreateTodo:
-    handler: src/lambda/http/createTodo.handler
+  CreateMeal:
+    handler: src/lambda/http/createMeal.handler
     events:
       - http:
           method: post
-          path: todos
+          path: meals
           cors: true
           authorizer: Auth
           reqValidatorName: RequestBodyValidator
           documentation:
-            summary: Create a new todo item
-            description: Create a new todo item
+            summary: Create a new meal item
+            description: Create a new meal item
             requestModels:
               'application/json': CreateRequest
     iamRoleStatements:
       - Effect: Allow
         Action:
           - dynamodb:PutItem
-        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.MEALS_TABLE}
 
-  UpdateTodo:
-    handler: src/lambda/http/updateTodo.handler
+  UpdateMeal:
+    handler: src/lambda/http/updateMeal.handler
     events:
       - http:
           method: patch
-          path: todos/{todoId}
+          path: meals/{mealId}
           cors: true
           authorizer: Auth
           reqValidatorName: RequestBodyValidator
           documentation:
-            summary: Update a todo item
-            description: Update a todo item
+            summary: Update a meal item
+            description: Update a meal item
             requestModels:
               'application/json': UpdateRequest
     iamRoleStatements:
       - Effect: Allow
         Action:
           - dynamodb:UpdateItem
-        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.MEALS_TABLE}
 
-  DeleteTodo:
-    handler: src/lambda/http/deleteTodo.handler
+  DeleteMeal:
+    handler: src/lambda/http/deleteMeal.handler
     events:
       - http:
           method: delete
-          path: todos/{todoId}
+          path: meals/{mealId}
           cors: true
           authorizer: Auth
     iamRoleStatements:
       - Effect: Allow
         Action:
           - dynamodb:DeleteItem
-        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.MEALS_TABLE}
 
   GenerateUploadUrl:
     handler: src/lambda/http/generateUploadUrl.handler
     events:
       - http:
           method: post
-          path: todos/{todoId}/attachment
+          path: meals/{mealId}/attachment
           cors: true
           authorizer: Auth
     iamRoleStatements:
@@ -127,7 +127,7 @@ functions:
         Action:
           - s3:PutObject
           - s3:GetObject
-        Resource: arn:aws:s3:::${self:provider.environment.TODO_IMAGES_S3_BUCKET}/*
+        Resource: arn:aws:s3:::${self:provider.environment.MEAL_IMAGES_S3_BUCKET}/*
 
 resources:
   Resources:
@@ -151,7 +151,7 @@ resources:
         RestApiId:
           Ref: ApiGatewayRestApi
 
-    TodosTable:
+    MealsTable:
       Type: AWS::DynamoDB::Table
       Properties:
         AttributeDefinitions:
@@ -159,15 +159,15 @@ resources:
             AttributeType: S
           - AttributeName: createdAt
             AttributeType: S
-          - AttributeName: todoId
+          - AttributeName: mealId
             AttributeType: S
         KeySchema:
           - AttributeName: userId
             KeyType: HASH
-          - AttributeName: todoId
+          - AttributeName: mealId
             KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
-        TableName: ${self:provider.environment.TODOS_TABLE}
+        TableName: ${self:provider.environment.MEALS_TABLE}
         LocalSecondaryIndexes:
           - IndexName: ${self:provider.environment.CREATED_AT_INDEX}
             KeySchema:
@@ -181,7 +181,7 @@ resources:
     AttachmentsBucket:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: ${self:provider.environment.TODO_IMAGES_S3_BUCKET}
+        BucketName: ${self:provider.environment.MEAL_IMAGES_S3_BUCKET}
         CorsConfiguration:
           CorsRules:
             - AllowedOrigins:
@@ -207,5 +207,5 @@ resources:
               Effect: Allow
               Principal: '*'
               Action: 's3:GetObject'
-              Resource: 'arn:aws:s3:::${self:provider.environment.TODO_IMAGES_S3_BUCKET}/*'
+              Resource: 'arn:aws:s3:::${self:provider.environment.MEAL_IMAGES_S3_BUCKET}/*'
         Bucket: !Ref AttachmentsBucket
